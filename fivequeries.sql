@@ -23,17 +23,18 @@ FROM player p
 JOIN rating_2010 r10 ON p.player_api_id = r10.player_api_id
 JOIN rating_2015 r15 ON p.player_api_id = r15.player_api_id
 WHERE r15.rating > r10.rating
-ORDER BY evolucao DESC
+ORDER BY evolution DESC
 LIMIT 20;
 
 
 
---Current Top Playmakers by Passing Ability
 
+--The Fastest Players (Speed & Acceleration)
 WITH RankedAttributes AS (
     SELECT
         pa.player_api_id,
-        pa.passing,
+        pa.sprint_speed,
+        pa.acceleration,
         pa.date,
         ROW_NUMBER() OVER (PARTITION BY pa.player_api_id ORDER BY pa.date DESC) as rn
     FROM
@@ -41,8 +42,9 @@ WITH RankedAttributes AS (
 )
 SELECT
     p.player_name,
-    ra.passing,
-    ra.date
+    ra.sprint_speed,
+    ra.acceleration,
+    (ra.sprint_speed + ra.acceleration) / 2 AS speed_score
 FROM
     RankedAttributes ra
 JOIN
@@ -50,9 +52,8 @@ JOIN
 WHERE
     ra.rn = 1
 ORDER BY
-    ra.passing DESC NULLS LAST
+    speed_score DESC
 LIMIT 20;
-
 
 --Elite Dual-Threat Attackers (Above Average Finishing & Long Shots)
 SELECT 
